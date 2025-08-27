@@ -37,11 +37,10 @@ class OpenStreetMapSearchAndPick extends StatefulWidget {
     this.buttonColor = Colors.blue,
     this.locationPinIconColor = Colors.blue,
     this.locationPinText = 'Location',
-    this.locationPinTextStyle = const TextStyle(
-        fontSize: 16, fontWeight: FontWeight.bold, color: Colors.blue),
+    this.locationPinTextStyle =
+        const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.blue),
     this.hintText = 'Search Location',
-    this.buttonTextStyle = const TextStyle(
-        fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+    this.buttonTextStyle = const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
     this.buttonTextColor = Colors.white,
     this.buttonText = 'Set Current Location',
     this.buttonHeight = 50,
@@ -51,12 +50,10 @@ class OpenStreetMapSearchAndPick extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<OpenStreetMapSearchAndPick> createState() =>
-      _OpenStreetMapSearchAndPickState();
+  State<OpenStreetMapSearchAndPick> createState() => _OpenStreetMapSearchAndPickState();
 }
 
-class _OpenStreetMapSearchAndPickState
-    extends State<OpenStreetMapSearchAndPick> {
+class _OpenStreetMapSearchAndPickState extends State<OpenStreetMapSearchAndPick> {
   MapController _mapController = MapController();
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
@@ -91,8 +88,8 @@ class _OpenStreetMapSearchAndPickState
   }
 
   void setNameCurrentPos() async {
-    double latitude = _mapController.center.latitude;
-    double longitude = _mapController.center.longitude;
+    double latitude = _mapController.camera.center.latitude;
+    double longitude = _mapController.camera.center.longitude;
     if (kDebugMode) {
       print(latitude);
     }
@@ -104,11 +101,9 @@ class _OpenStreetMapSearchAndPickState
 
     var response = await client.get(Uri.parse(url));
     // var response = await client.post(Uri.parse(url));
-    var decodedResponse =
-        jsonDecode(utf8.decode(response.bodyBytes)) as Map<dynamic, dynamic>;
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map<dynamic, dynamic>;
 
-    _searchController.text =
-        decodedResponse['display_name'] ?? "MOVE TO CURRENT POSITION";
+    _searchController.text = decodedResponse['display_name'] ?? "MOVE TO CURRENT POSITION";
     setState(() {});
   }
 
@@ -125,11 +120,9 @@ class _OpenStreetMapSearchAndPickState
 
     var response = await client.get(Uri.parse(url));
     // var response = await client.post(Uri.parse(url));
-    var decodedResponse =
-        jsonDecode(utf8.decode(response.bodyBytes)) as Map<dynamic, dynamic>;
+    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map<dynamic, dynamic>;
 
-    _searchController.text =
-        decodedResponse['display_name'] ?? "MOVE TO CURRENT POSITION";
+    _searchController.text = decodedResponse['display_name'] ?? "MOVE TO CURRENT POSITION";
   }
 
   @override
@@ -145,8 +138,7 @@ class _OpenStreetMapSearchAndPickState
 
           var response = await client.get(Uri.parse(url));
           // var response = await client.post(Uri.parse(url));
-          var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes))
-              as Map<dynamic, dynamic>;
+          var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map<dynamic, dynamic>;
 
           _searchController.text = decodedResponse['display_name'];
           setState(() {});
@@ -198,12 +190,14 @@ class _OpenStreetMapSearchAndPickState
               Positioned.fill(
                 child: FlutterMap(
                   options: MapOptions(
-                      center: mapCentre, zoom: 15.0, maxZoom: 18, minZoom: 6),
+                      initialCenter: mapCentre ?? LatLng(30.0, 30.0),
+                      initialZoom: 15.0,
+                      maxZoom: 18,
+                      minZoom: 6),
                   mapController: _mapController,
                   children: [
                     TileLayer(
-                      urlTemplate:
-                          "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                      urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
                       subdomains: const ['a', 'b', 'c'],
                       // attributionBuilder: (_) {
                       //   return Text("© OpenStreetMap contributors");
@@ -219,8 +213,7 @@ class _OpenStreetMapSearchAndPickState
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(widget.locationPinText,
-                            style: widget.locationPinTextStyle,
-                            textAlign: TextAlign.center),
+                            style: widget.locationPinTextStyle, textAlign: TextAlign.center),
                         Padding(
                           padding: const EdgeInsets.only(bottom: 50),
                           child: Icon(
@@ -241,8 +234,7 @@ class _OpenStreetMapSearchAndPickState
                   heroTag: 'btn1',
                   backgroundColor: widget.buttonColor,
                   onPressed: () {
-                    _mapController.move(
-                        _mapController.center, _mapController.zoom + 1);
+                    _mapController.move(_mapController.camera.center, _mapController.camera.zoom + 1);
                   },
                   child: Icon(
                     widget.zoomInIcon,
@@ -257,8 +249,7 @@ class _OpenStreetMapSearchAndPickState
                   heroTag: 'btn2',
                   backgroundColor: widget.buttonColor,
                   onPressed: () {
-                    _mapController.move(
-                        _mapController.center, _mapController.zoom - 1);
+                    _mapController.move(_mapController.camera.center, _mapController.camera.zoom - 1);
                   },
                   child: Icon(
                     widget.zoomOutIcon,
@@ -275,11 +266,9 @@ class _OpenStreetMapSearchAndPickState
                   onPressed: () async {
                     if (mapCentre != null) {
                       _mapController.move(
-                          LatLng(mapCentre.latitude, mapCentre.longitude),
-                          _mapController.zoom);
+                          LatLng(mapCentre.latitude, mapCentre.longitude), _mapController.camera.zoom);
                     } else {
-                      _mapController.move(
-                          LatLng(50.5, 30.51), _mapController.zoom);
+                      _mapController.move(LatLng(50.5, 30.51), _mapController.camera.zoom);
                     }
                     setNameCurrentPos();
                   },
@@ -314,8 +303,7 @@ class _OpenStreetMapSearchAndPickState
                               _debounce?.cancel();
                             }
 
-                            _debounce = Timer(
-                                const Duration(milliseconds: 2000), () async {
+                            _debounce = Timer(const Duration(milliseconds: 2000), () async {
                               if (kDebugMode) {
                                 print(value);
                               }
@@ -329,8 +317,7 @@ class _OpenStreetMapSearchAndPickState
                                 var response = await client.get(Uri.parse(url));
                                 // var response = await client.post(Uri.parse(url));
                                 var decodedResponse =
-                                    jsonDecode(utf8.decode(response.bodyBytes))
-                                        as List<dynamic>;
+                                    jsonDecode(utf8.decode(response.bodyBytes)) as List<dynamic>;
                                 if (kDebugMode) {
                                   print(decodedResponse);
                                 }
@@ -356,18 +343,13 @@ class _OpenStreetMapSearchAndPickState
                           return ListView.builder(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
-                            itemCount:
-                                _options.length > 5 ? 5 : _options.length,
+                            itemCount: _options.length > 5 ? 5 : _options.length,
                             itemBuilder: (context, index) {
                               return ListTile(
                                 title: Text(_options[index].displayname),
-                                subtitle: Text(
-                                    '${_options[index].lat},${_options[index].lon}'),
+                                subtitle: Text('${_options[index].lat},${_options[index].lon}'),
                                 onTap: () {
-                                  _mapController.move(
-                                      LatLng(_options[index].lat,
-                                          _options[index].lon),
-                                      15.0);
+                                  _mapController.move(LatLng(_options[index].lat, _options[index].lon), 15.0);
 
                                   _focusNode.unfocus();
                                   _options.clear();
@@ -412,17 +394,19 @@ class _OpenStreetMapSearchAndPickState
   }
 
   Future<PickedData> pickData() async {
-    LatLong center = LatLong(
-        _mapController.center.latitude, _mapController.center.longitude);
+    LatLong center = LatLong(_mapController.camera.center.latitude, _mapController.camera.center.longitude);
     var client = http.Client();
-    String url =
-        '${widget.baseUri}/reverse?format=json&lat=${_mapController.center.latitude}&lon=${_mapController.center.longitude}&zoom=18&addressdetails=1';
+    String displayName = "";
+    var decodedResponse = <String, dynamic>{"address": <String, dynamic>{}};
+    try {
+      String url =
+          '${widget.baseUri}/reverse?format=json&lat=${_mapController.camera.center.latitude}&lon=${_mapController.camera.center.longitude}&zoom=18&addressdetails=1';
 
-    var response = await client.get(Uri.parse(url));
-    // var response = await client.post(Uri.parse(url));
-    var decodedResponse =
-        jsonDecode(utf8.decode(response.bodyBytes)) as Map<dynamic, dynamic>;
-    String displayName = decodedResponse['display_name'];
+      var response = await client.get(Uri.parse(url));
+      // var response = await client.post(Uri.parse(url));
+      var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map<dynamic, dynamic>;
+      displayName = decodedResponse['display_name'];
+    } catch (e) {}
     return PickedData(center, displayName, decodedResponse["address"]);
   }
 }
